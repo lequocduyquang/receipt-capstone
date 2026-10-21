@@ -124,15 +124,7 @@ def quyet_cong_vao(net, diem):
     #   - diem >= DIEM_CHAC_LA_HOA_DON        thì ("QUA", "")
     #   - diem < DIEM_CHAC_KHONG_PHAI         thì ("CHAN", "không giống hoá đơn")
     #   - còn lại, SigLIP không chắc          thì ("HOI_VLM", "SigLIP không chắc")
-    # --- lời giải ---
-    if net < NGUONG_MO:
-        return "CHAN", "ảnh bị mờ"
-    if diem >= DIEM_CHAC_LA_HOA_DON:
-        return "QUA", ""
-    if diem < DIEM_CHAC_KHONG_PHAI:
-        return "CHAN", "không giống hoá đơn"
-    return "HOI_VLM", "SigLIP không chắc"
-    # --- hết lời giải ---
+    raise NotImplementedError("TODO 1")
 
 
 # ================================================================
@@ -152,12 +144,7 @@ def kiem_tra(rows, tong_cong):
     #   - tong_cac_mon(rows) phải bằng tam_tinh                (OCR bỏ sót hoặc đọc sai một món)
     #   - tam_tinh - tien_giam(rows) phải bằng tong_cong       (OCR đọc sai tổng, hoặc ai đó sửa tổng)
     #   tong_cong có thể là None (đã báo lỗi ở trên), khi đó bỏ qua phép thứ hai.
-    # --- lời giải ---
-    if tong_cac_mon(rows) != tam_tinh:
-        loi.append(f"các món cộng lại {tong_cac_mon(rows)} khác tạm tính {tam_tinh}")
-    elif tong_cong is not None and tam_tinh - tien_giam(rows) != tong_cong:
-        loi.append(f"tạm tính {tam_tinh} trừ giảm giá {tien_giam(rows)} khác tổng cộng {tong_cong}")
-    # --- hết lời giải ---
+    raise NotImplementedError("TODO 2")
     return loi
 
 
@@ -167,9 +154,7 @@ def kiem_tra(rows, tong_cong):
 def can_fallback(loi, diem_ocr):
     """loi: lỗi sensor của PaddleOCR. diem_ocr: điểm đọc chữ trung bình, từ 0 đến 1."""
     # TODO 3: gọi Bedrock khi sensor báo lỗi, HOẶC khi PaddleOCR đọc không tự tin (diem_ocr < NGUONG_DIEM_OCR).
-    # --- lời giải ---
-    return bool(loi) or diem_ocr < NGUONG_DIEM_OCR
-    # --- hết lời giải ---
+    raise NotImplementedError("TODO 3")
 
 
 # ================================================================
@@ -201,10 +186,7 @@ def kiem_nova(nova, chu_textract):
     #   Không bằng thì loi.append(f"tổng {tong} của Nova không có trên dòng TỔNG CỘNG mà Textract đọc được")
     #   Vì sao không chỉ hỏi "con số có ở đâu đó trên ảnh"? Che dòng tổng của hoá đơn không giảm giá thì
     #   Nova ghi tổng = tạm tính, và con số đó vẫn có trên ảnh, ở dòng Tạm tính.
-    # --- lời giải ---
-    if tim_so([[dong] for dong in chu_textract.splitlines()], DONG_TONG) != tong:
-        loi.append(f"tổng {tong} của Nova không có trên dòng TỔNG CỘNG mà Textract đọc được")
-    # --- hết lời giải ---
+    raise NotImplementedError("TODO 4")
     return loi
 
 
@@ -221,12 +203,4 @@ def cong_duyet(loi_paddle, loi_nova, tong_paddle=None, tong_nova=None):
     #   - loi_paddle rỗng                                      thì (GHI_SO, "paddle", "các con số khớp nhau")
     #   - còn lại                                              thì (CAN_NGUOI_XEM, "", "; ".join(loi_paddle + (loi_nova or [])))
     #   Phân biệt loi_nova == [] (gọi rồi, không lỗi) với loi_nova is None (không gọi).
-    # --- lời giải ---
-    if loi_nova == [] and not loi_paddle and tong_paddle != tong_nova:
-        return CAN_NGUOI_XEM, "", "Paddle và Nova đọc tổng khác nhau"
-    if loi_nova == []:
-        return GHI_SO, "nova", "Nova đọc lại, tổng khớp dòng TỔNG CỘNG"
-    if not loi_paddle:
-        return GHI_SO, "paddle", "các con số khớp nhau"
-    return CAN_NGUOI_XEM, "", "; ".join(loi_paddle + (loi_nova or []))
-    # --- hết lời giải ---
+    raise NotImplementedError("TODO 5")
