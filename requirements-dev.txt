@@ -1,0 +1,5 @@
+# Chạy test, eval và Ray trên máy hoặc Colab. Space chỉ cài requirements.txt
+-r requirements.txt
+pytest==9.1.1
+httpx==0.28.1
+ray[data]==2.59.0

@@ -1,0 +1,13 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.1
+transformers==5.20.1
+paddlepaddle==3.2.2
+paddleocr==3.7.0
+fastapi==0.146.0
+uvicorn==0.54.0
+python-multipart==0.0.32
+boto3==1.43.116
+python-dotenv==1.2.4
+prometheus-client==0.26.0
+pillow==12.3.0
+numpy==2.3.5

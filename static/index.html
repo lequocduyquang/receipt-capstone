@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sổ chi tiêu từ hoá đơn</title>
+<style>
+  :root { --bg:#f7f7f5; --card:#fff; --text:#1d1d1b; --muted:#6b6b66; --line:#e2e2dc; --ok:#1f7a4d; --warn:#b26a00; --bad:#b3261e; --accent:#2457c5; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#141413; --card:#1e1e1c; --text:#ececea; --muted:#9a9a94; --line:#33332f; --ok:#4cc38a; --warn:#f0a63a; --bad:#f2766b; --accent:#7aa2ff; } }
+  * { box-sizing:border-box }
+  body { margin:0; font:16px/1.5 system-ui, sans-serif; background:var(--bg); color:var(--text) }
+  main { max-width:1100px; margin:0 auto; padding:24px 16px }
+  h1 { font-size:24px; margin:0 0 4px } p.sub { color:var(--muted); margin:0 0 20px }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px } @media (max-width:800px){ .grid{grid-template-columns:1fr} }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px }
+  #tha { border:2px dashed var(--line); border-radius:10px; padding:28px; text-align:center; cursor:pointer; color:var(--muted) }
+  #tha.keo { border-color:var(--accent) }
+  #xem img { max-width:100%; max-height:360px; display:block; margin:12px auto 0; border-radius:6px }
+  .mau { display:flex; gap:6px; flex-wrap:wrap; margin-top:12px } .mau button { font-size:13px }
+  button, input { font:inherit; padding:6px 10px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--text) }
+  button { cursor:pointer } label { color:var(--muted); font-size:14px } a { color:var(--accent) }
+  .the { display:inline-block; padding:4px 12px; border-radius:99px; font-weight:700; color:#fff }
+  table { width:100%; border-collapse:collapse; font-size:14px } td, th { text-align:left; padding:6px 4px; border-bottom:1px solid var(--line) }
+  th { color:var(--muted); font-weight:600 } td.so { text-align:right; font-variant-numeric:tabular-nums }
+  .chi { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px }
+  .chi div { background:var(--bg); border-radius:8px; padding:8px } .chi b { display:block; font-size:20px } .chi span { color:var(--muted); font-size:13px }
+  pre { white-space:pre-wrap; font-size:12px; background:var(--bg); padding:8px; border-radius:6px; max-height:240px; overflow:auto }
+</style>
+</head>
+<body>
+<main>
+  <h1>Ảnh hoá đơn vào, sổ chi tiêu ra</h1>
+  <p class="sub">SigLIP 2 kiểm ảnh, PaddleOCR đọc chữ, sensor cộng tiền. Đọc không chắc thì Textract và Nova Lite đọc lại. Vẫn không chắc thì chuyển người.</p>
+
+  <div class="grid">
+    <section class="card">
+      <div id="tha">Kéo thả ảnh hoá đơn vào đây, hoặc bấm để chọn ảnh
+        <input id="file" type="file" accept="image/*" hidden>
+      </div>
+      <div class="mau" id="mau"></div>
+      <div id="xem"></div>
+    </section>
+
+    <section class="card">
+      <div id="ket-qua"><p class="sub">Chưa có ảnh nào.</p></div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:16px">
+    <strong>Monitoring</strong> <span class="sub" style="font-size:13px">200 hoá đơn gần nhất · <a href="/metrics">/metrics</a> · <a href="/docs">/docs</a></span>
+    <div class="chi" id="thong-ke"></div>
+  </section>
+</main>
+
+<script>
+const MAU = ["easy_01.jpg", "medium_02.jpg", "hard_06.jpg", "che_tong.jpg", "hoa_don_mo.jpg", "khong_phai_hoa_don.jpg"];
+const MAU_TRANG_THAI = { "GHI SỔ": "var(--ok)", "CẦN NGƯỜI XEM": "var(--warn)", "CHẶN": "var(--bad)" };
+const $ = id => document.getElementById(id);
+const tien = n => n == null ? "—" : n.toLocaleString("vi-VN") + "đ";
+const esc = s => String(s ?? "—").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+
+async function gui(blob, ten) {
+  $("xem").innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="${esc(ten)}">`;
+  $("ket-qua").innerHTML = `<p class="sub">Đang xử lý ${esc(ten)}…</p>`;
+  const form = new FormData();
+  form.append("anh", blob, ten);
+  let kq;
+  try {
+    const r = await fetch("/api/hoa-don", { method: "POST", body: form });
+    const text = await r.text();
+    try { kq = JSON.parse(text); } catch { kq = { detail: text }; }
+    if (!r.ok) throw new Error(kq.detail || r.statusText);
+  } catch (e) {   // lỗi mạng hoặc server trả 4xx/5xx
+    $("ket-qua").innerHTML = `<p style="color:var(--bad)">${esc(e.message)}</p>`;
+    return;
+  }
+  $("ket-qua").innerHTML = `
+    <span class="the" style="background:${MAU_TRANG_THAI[kq.trang_thai]}">${esc(kq.trang_thai)}</span>
+    ${kq.nguon ? `<span class="sub"> · nguồn: ${esc(kq.nguon)}</span>` : ""}
+    <p>${esc(kq.ly_do)}</p>
+    <table>
+      <tr><th>Cửa hàng</th><td>${esc(kq.cua_hang)}</td></tr>
+      <tr><th>Ngày</th><td>${esc(kq.ngay)}</td></tr>
+      <tr><th>Tổng cộng</th><td>${tien(kq.tong_cong)}</td></tr>
+      <tr><th>Danh mục</th><td>${esc(kq.danh_muc)}</td></tr>
+    </table>
+    <table style="margin-top:12px">
+      <tr><th>Bước</th><th>Chi tiết</th><th class="so">Giây</th></tr>
+      ${kq.buoc.map(b => `<tr><td>${esc(b.ten)}</td><td>${esc(b.chi_tiet)}</td><td class="so">${b.giay}</td></tr>`).join("")}
+      <tr><th>Tổng</th><td>chi phí AWS $${kq.chi_phi_usd}</td><td class="so"><b>${kq.giay}</b></td></tr>
+    </table>
+    <details><summary>JSON</summary><pre>${esc(JSON.stringify(kq, null, 2))}</pre></details>`;
+  capNhatThongKe();
+}
+
+async function capNhatThongKe() {
+  let t;
+  try { t = await (await fetch("/api/thong-ke")).json(); } catch { return; }
+  const tt = t.trang_thai || {};
+  const o = [
+    [t.so_hoa_don, "hoá đơn"], [tt["GHI SỔ"] || 0, "ghi sổ"], [tt["CẦN NGƯỜI XEM"] || 0, "chuyển người"],
+    [tt["CHẶN"] || 0, "bị chặn"], [t.giay_p50 != null ? `${t.giay_p50} / ${t.giay_p95} s` : "—", "p50 / p95"],
+    [t.ti_le_fallback != null ? Math.round(t.ti_le_fallback * 100) + "%" : "—", "gọi AWS"],
+    [t.chi_phi_usd != null ? "$" + t.chi_phi_usd : "—", "chi phí AWS"], [t.aws_con_lai_hom_nay, "lượt AWS còn hôm nay"],
+    [t.co_key_aws ? "có" : "không", "key AWS trên máy"],
+  ];
+  $("thong-ke").innerHTML = o.map(([v, k]) => `<div><b>${esc(v)}</b><span>${k}</span></div>`).join("");
+}
+
+$("tha").onclick = () => $("file").click();
+$("file").onchange = e => e.target.files[0] && gui(e.target.files[0], e.target.files[0].name);
+$("tha").ondragover = e => { e.preventDefault(); $("tha").classList.add("keo"); };
+$("tha").ondragleave = () => $("tha").classList.remove("keo");
+$("tha").ondrop = e => { e.preventDefault(); $("tha").classList.remove("keo"); const f = e.dataTransfer.files[0]; f && gui(f, f.name); };
+$("mau").innerHTML = MAU.map(m => `<button data-m="${m}">${m.replace(".jpg", "")}</button>`).join("");
+$("mau").onclick = async e => { const m = e.target.dataset.m; if (m) gui(await (await fetch("/examples/" + m)).blob(), m); };
+capNhatThongKe();
+setInterval(capNhatThongKe, 10000);
+</script>
+</body>
+</html>

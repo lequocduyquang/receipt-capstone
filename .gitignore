@@ -1,0 +1,5 @@
+capenv/
+__pycache__/
+.pytest_cache/
+.env
+danhgia.jsonl
