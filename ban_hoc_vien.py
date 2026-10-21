@@ -1,8 +1,8 @@
 """Tạo bản học viên từ bản lời giải: chép cả thư mục, thay lời giải trong logic.py bằng raise NotImplementedError.
 
 Chỉ sửa lời giải ở một chỗ (nhánh main), bản học viên luôn sinh lại được, không bao giờ lệch nhau.
-    python ban_hoc_vien.py              tạo ../capstone_hoc_vien/
-    python ban_hoc_vien.py ../dev       ghi đè vào worktree của nhánh dev (giữ nguyên .git)
+    git worktree add ../receipt-capstone-dev dev     một lần
+    python ban_hoc_vien.py                           ghi đè vào worktree đó (giữ nguyên .git), rồi commit ở đó
 """
 import re
 import shutil
@@ -22,7 +22,7 @@ def xoa_loi_giai(code):
 
 
 if __name__ == "__main__":
-    DICH = Path(sys.argv[1]) if len(sys.argv) > 1 else NGUON.parent / "capstone_hoc_vien"
+    DICH = Path(sys.argv[1]) if len(sys.argv) > 1 else NGUON.parent / "receipt-capstone-dev"
     assert DICH.resolve() != NGUON.resolve(), "thư mục đích không được là thư mục lời giải"
     DICH.mkdir(exist_ok=True)
     for f in DICH.iterdir():   # xoá bản cũ nhưng giữ .git (worktree) và môi trường Python

@@ -50,7 +50,7 @@ Nhánh `dev` luôn được sinh từ `main` bằng `ban_hoc_vien.py`, không s�
 
 ```bash
 git worktree add ../receipt-capstone-dev dev      # một lần
-python ban_hoc_vien.py ../receipt-capstone-dev    # rồi commit trong worktree đó
+python ban_hoc_vien.py                            # ghi vào ../receipt-capstone-dev, rồi commit ở đó
 ```
 
 ## 5 TODO trong `logic.py`
@@ -70,6 +70,8 @@ Mỗi TODO có test riêng: `pytest -k todo1` đến `pytest -k todo5`. Xong c�
 Cần Python 3.12 (PaddlePaddle 3.2 chưa có bản cho 3.13 trở lên).
 
 ```bash
+git clone -b dev https://github.com/lequocduyquang/receipt-capstone.git
+cd receipt-capstone
 python3.12 -m venv capenv && source capenv/bin/activate     # Windows: capenv\Scripts\activate
 pip install -r requirements-dev.txt
 pytest                                   # không tải model, không cần key, dưới 3 giây
