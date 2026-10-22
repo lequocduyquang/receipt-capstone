@@ -11,7 +11,7 @@ CANH_DAI = 1280   # ảnh điện thoại 4000 px được thu về cỡ này, k
 CAU_HOA_DON = "Đây là ảnh chụp một tờ hoá đơn."   # câu tách hoá đơn với ảnh khác tốt nhất (đo ở Buổi 22)
 
 # ponytail: một khoá chung cho mọi model, mỗi lúc chỉ một ảnh được suy luận.
-# Đủ cho một máy; cần nhiều người dùng cùng lúc thì chạy nhiều bản (Ray, nhiều worker) thay vì bỏ khoá.
+# Đủ cho một máy; cần nhiều người dùng cùng lúc thì chạy nhiều bản (nhiều worker) thay vì bỏ khoá.
 _khoa = threading.Lock()
 
 

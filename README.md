@@ -31,7 +31,7 @@ Một web app hoàn chỉnh ráp mọi thứ đã học từ Buổi 20 đến 23
 | `giam_sat.py` | Log JSON, metric Prometheus, thống kê p50/p95 |
 | `server.py` | FastAPI: trang web, `/api/hoa-don`, `/api/thong-ke`, `/metrics`, `/docs` |
 | `static/index.html` | Trang web kéo thả ảnh, bảng từng bước, bảng monitoring |
-| `danhgia.py` | Eval trên 30 hoá đơn × 3 dạng ảnh, chạy song song bằng Ray |
+| `danhgia.py` | Eval trên 30 hoá đơn × 3 dạng ảnh |
 | `tests/` | Test logic, test cả chuỗi và API bằng model giả và AWS giả |
 | `ban_hoc_vien.py` | Chỉ có ở nhánh `main`: sinh bản học viên cho nhánh `dev` (xoá lời giải 5 TODO) |
 
@@ -88,7 +88,7 @@ Không có key AWS thì app vẫn chạy đủ, chỉ là ca khó chuyển ngư�
 ```bash
 cp .env.example .env        # rồi điền AWS_ACCESS_KEY_ID và AWS_SECRET_ACCESS_KEY
 uvicorn server:app --port 7860           # app tự đọc .env khi khởi động
-python danhgia.py --aws --ray 4          # eval 90 ảnh có fallback, khoảng $0,06
+python danhgia.py --aws                  # eval 90 ảnh có fallback, khoảng $0,06
 ```
 
 Không bao giờ commit hay gửi file `.env` lên group. Ba lớp bảo vệ tiền AWS:
@@ -113,7 +113,7 @@ Mạng công ty có proxy chèn chứng chỉ (lỗi `CERTIFICATE_VERIFY_FAILED`
 
 ## Eval
 
-Đo ngày 21/10/2026 trên MacBook M5, `python danhgia.py --ray 4` và `python danhgia.py --ray 4 --aws`. "Ghi sổ đúng" là tổng tiền, ngày và danh mục đều đúng.
+Đo ngày 21/10/2026 trên MacBook M5, `python danhgia.py` và `python danhgia.py --aws`. "Ghi sổ đúng" là tổng tiền, ngày và danh mục đều đúng.
 
 | Dạng ảnh (30 hoá đơn) | Fallback AWS | Ghi sổ đúng | Sai mà lọt | Chuyển người | Bị chặn | Gọi AWS | p50 / p95 giây | $ |
 |---|---|---|---|---|---|---|---|---|
